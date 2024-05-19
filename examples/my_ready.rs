@@ -1,7 +1,17 @@
 use std::{pin::Pin, task};
 
 use futures::Future;
-use macros::my_ready;
+
+// my_ready! = Poll::Ready / Poll::Pending
+#[macro_export]
+macro_rules! my_ready {
+    ($expr:expr) => {
+        match $expr {
+            std::task::Poll::Ready(val) => std::task::Poll::Ready(val),
+            std::task::Poll::Pending => return std::task::Poll::Pending,
+        }
+    };
+}
 
 #[tokio::main]
 async fn main() {
