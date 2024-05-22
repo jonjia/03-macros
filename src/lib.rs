@@ -2,48 +2,24 @@
 
 // for enum, we'd like to generate From impls for each variant
 // for struct we'd like to generate From impls for each field
+mod enum_from;
+mod enum_from_darling;
 
+use enum_from::process_enum_from;
+use enum_from_darling::process_enum_from_darling;
 use proc_macro::TokenStream;
-use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput};
+use syn::{parse_macro_input, DeriveInput};
 
 #[proc_macro_derive(EnumFrom)]
 pub fn derive_enum_from(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     // print!("{:#?}", input);
-    let generics = input.generics;
-    let name = &input.ident;
-    let variants = match input.data {
-        Data::Enum(ref data) => &data.variants,
-        _ => panic!("EnumFrom can only be derived for enums"),
-    };
+    process_enum_from(input).into()
+}
 
-    // for each variant, get the ident and fields, generate a From impl
-    let from_impls = variants.iter().map(|variant| {
-        let variant_name = &variant.ident;
-        match &variant.fields {
-            syn::Fields::Unnamed(fields) => {
-                if fields.unnamed.len() != 1 {
-                    quote! {}
-                } else {
-                    let field = fields.unnamed.first().unwrap();
-                    let ty = &field.ty;
-                    quote! {
-                        impl #generics From<#ty> for #name #generics {
-                            fn from(e: #ty) -> Self {
-                                #name::#variant_name(e)
-                            }
-                        }
-                    }
-                }
-            }
-            syn::Fields::Named(_fields) => quote! {},
-            syn::Fields::Unit => quote! {},
-        }
-    });
-
-    quote! {
-        #(#from_impls)*
-    }
-    .into()
+#[proc_macro_derive(EnumFromDarling)]
+pub fn derive_enum_from_darling(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    // print!("{:#?}", input);
+    process_enum_from_darling(input).into()
 }

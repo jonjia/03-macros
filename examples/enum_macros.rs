@@ -1,7 +1,8 @@
-use macros::EnumFrom;
+#[allow(unused)]
+use macros::{EnumFrom, EnumFromDarling};
 
 #[allow(unused)]
-#[derive(Debug, EnumFrom)]
+#[derive(Debug, EnumFromDarling)]
 enum Direction<T> {
     Up(DirectionUp<T>),
     Down,
