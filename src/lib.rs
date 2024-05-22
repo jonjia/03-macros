@@ -11,6 +11,7 @@ use syn::{parse_macro_input, Data, DeriveInput};
 pub fn derive_enum_from(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     // print!("{:#?}", input);
+    let generics = input.generics;
     let name = &input.ident;
     let variants = match input.data {
         Data::Enum(ref data) => &data.variants,
@@ -28,7 +29,7 @@ pub fn derive_enum_from(input: TokenStream) -> TokenStream {
                     let field = fields.unnamed.first().unwrap();
                     let ty = &field.ty;
                     quote! {
-                        impl From<#ty> for #name {
+                        impl #generics From<#ty> for #name #generics {
                             fn from(e: #ty) -> Self {
                                 #name::#variant_name(e)
                             }
